@@ -1,0 +1,51 @@
+import pytesseract
+from PIL import Image, ImageEnhance, ImageFilter
+import cv2
+
+# Update this path based on your Tesseract installation
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+def preprocess_image(image_path):
+    """Preprocess the image for better OCR results."""
+    # Load the image using OpenCV
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    
+    # Resize the image to enhance small text
+    img = cv2.resize(img, None, fx=2, fy=2, interpolation=cv2.INTER_LINEAR)
+    
+    # Apply Gaussian blur to reduce noise
+    img = cv2.GaussianBlur(img, (5, 5), 0)
+    
+    # Apply thresholding
+    _, img = cv2.threshold(img, 150, 255, cv2.THRESH_BINARY)
+    
+    # Save the processed image (optional, for debugging)
+    processed_image_path = "processed_image.png"
+    cv2.imwrite(processed_image_path, img)
+    
+    return processed_image_path
+
+def perform_ocr(image_path):
+    """Perform OCR on the image."""
+    # Preprocess the image
+    processed_image_path = preprocess_image(image_path)
+    
+    # Load the processed image with Pillow
+    img = Image.open(processed_image_path)
+    
+    # Perform OCR using Tesseract
+    text = pytesseract.image_to_string(img, lang='eng', config='--psm 6')
+    
+    return text
+
+if __name__ == "__main__":
+    # Path to the image file
+    image_path = "kk.png"  # Replace with your image file
+    
+    try:
+        # Perform OCR and print the detected text
+        extracted_text = perform_ocr(image_path)
+        print("Extracted Text:")
+        print(extracted_text)
+    except Exception as e:
+        print(f"Error: {e}")
