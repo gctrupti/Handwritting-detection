@@ -1,1 +1,0 @@
-# Handwritting-detection
